@@ -16,10 +16,10 @@ using namespace cv;
 
 const int imageWidth = 320;								//摄像头的分辨率
 const int imageHeight = 240;
-const int boardWidth = 9;								//横向的角点数目
-const int boardHeight = 6;								//纵向的角点数据
+const int boardWidth = 13;								//横向的角点数目
+const int boardHeight = 8;								//纵向的角点数据
 const int boardCorner = boardWidth * boardHeight;		//总的角点数据
-const int frameNumber = 13;								//相机标定时需要采用的图像帧数
+const int frameNumber = 5;								//相机标定时需要采用的图像帧数
 const int squareSize = 20;								//标定板黑白格子的大小 单位mm
 const Size boardSize = Size(boardWidth, boardHeight);	//
 Size imageSize = Size(imageWidth, imageHeight);
@@ -48,21 +48,29 @@ Rect validROIL, validROIR;								//图像校正之后，会对图像进行裁剪，这里的validR
 														0 fy cy
 														0 0  1
 														*/
-Mat cameraMatrixL = (Mat_<double>(3, 3) << 532.782, 0, 532.904,
-	0, 342.505, 233.876,
+Mat cameraMatrixL = (Mat_<double>(3, 3) << 35.6725, 0, 250.215,
+	0, 37.4817, 126.203,
 	0, 0, 1);
-Mat distCoeffL = (Mat_<double>(5, 1) << -0.28095, 0.0255745, 0.00122226, -0.000137736, 0.162946);
+Mat distCoeffL = (Mat_<double>(5, 1) << 0.0178524, -0.000306116, -0.0167131, 0.00902217, 5.38398e-007);
+//0.0178524       -0.000306116    -0.0167131      0.00902217      5.38398e-007
 /*
 事先标定好的右相机的内参矩阵
 fx 0 cx
 0 fy cy
 0 0  1
 */
-Mat cameraMatrixR = (Mat_<double>(3, 3) << 532.782, 0, 532.904,
-	0, 342.505, 233.876,
+Mat cameraMatrixR = (Mat_<double>(3, 3) << 35.6755, 0, 250.211,
+	0, 37.4864, 126.195,
 	0, 0, 1);
-Mat distCoeffR = (Mat_<double>(5, 1) << -0.28095, 0.0255745, 0.00122226, -0.000137736, 0.162946);
-
+Mat distCoeffR = (Mat_<double>(5, 1) << 0.017867, -0.000306681, -0.0167222, 0.00902002, 5.43802e-007);
+/*
+相机内参数矩阵：3x3
+35.6755         0   250.211
+0   37.4864   126.195
+0         0         1
+畸变系数矩阵：1x5
+0.017867        -0.000306681    -0.0167222      0.00902002      5.43802e-007
+*/
 
 /*计算标定板上模块的实际物理坐标*/
 void calRealPoint(vector<vector<Point3f>>& obj, int boardwidth, int boardheight, int imgNumber, int squaresize)
@@ -114,20 +122,20 @@ void outputCameraParam(void)
 int _tmain(int argc, _TCHAR* argv[])
 {
 	Mat img;
-	int goodFrameCount = 0;
+	int goodFrameCount = 1;
 	namedWindow("ImageL");
 	namedWindow("ImageR");
 	cout << "按Q退出 ..." << endl;
-	while (goodFrameCount < frameNumber)
+	while (goodFrameCount <= frameNumber)
 	{
 		char filename[100];
 		/*读取左边的图像*/
-		sprintf_s(filename, "image\\left%02d.jpg", goodFrameCount + 1);
+		sprintf_s(filename, "C:/Users/Administrator/Desktop/sterovision/left_right_img0304_01/left%d.jpg", goodFrameCount );
 		rgbImageL = imread(filename, CV_LOAD_IMAGE_COLOR);
 		cvtColor(rgbImageL, grayImageL, CV_BGR2GRAY);
 
 		/*读取右边的图像*/
-		sprintf_s(filename, "image\\right%02d.jpg", goodFrameCount + 1);
+		sprintf_s(filename, "C:/Users/Administrator/Desktop/sterovision/left_right_img0304_01/right%d.jpg", goodFrameCount );
 		rgbImageR = imread(filename, CV_LOAD_IMAGE_COLOR);
 		cvtColor(rgbImageR, grayImageR, CV_BGR2GRAY);
 
