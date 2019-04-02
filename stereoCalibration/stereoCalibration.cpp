@@ -130,18 +130,20 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		char filename[100];
 		/*读取左边的图像*/
-		sprintf_s(filename, "C:/Users/Administrator/Desktop/sterovision/left_right_img0304_01/left%d.jpg", goodFrameCount );
+//		sprintf_s(filename, "C:/Users/Administrator/Desktop/sterovision/left_right_img0304_01/left%d.jpg", goodFrameCount );
+		sprintf_s(filename, "./left_right_img0304_01/left%d.jpg", goodFrameCount);
 		rgbImageL = imread(filename, CV_LOAD_IMAGE_COLOR);
 		cvtColor(rgbImageL, grayImageL, CV_BGR2GRAY);
 
 		/*读取右边的图像*/
-		sprintf_s(filename, "C:/Users/Administrator/Desktop/sterovision/left_right_img0304_01/right%d.jpg", goodFrameCount );
+//		sprintf_s(filename, "C:/Users/Administrator/Desktop/sterovision/left_right_img0304_01/right%d.jpg", goodFrameCount );
+		sprintf_s(filename, "./left_right_img0304_01/right%d.jpg", goodFrameCount);
 		rgbImageR = imread(filename, CV_LOAD_IMAGE_COLOR);
 		cvtColor(rgbImageR, grayImageR, CV_BGR2GRAY);
 
 		bool isFindL, isFindR;
 
-		isFindL = findChessboardCorners(rgbImageL, boardSize, cornerL);
+		isFindL = findChessboardCorners(rgbImageL, boardSize, cornerL);//FindChessboardCorners是opencv的一个函数，可以用来寻找棋盘图的内角点位置。
 		isFindR = findChessboardCorners(rgbImageR, boardSize, cornerR);
 		if (isFindL == true && isFindR == true)	 //如果两幅图像都找到了所有的角点 则说明这两幅图像是可行的
 		{
@@ -150,6 +152,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			Size(-1,-1) 死区的一半尺寸
 			TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 20, 0.1)迭代终止条件
 			*/
+			//如果对角点的精度有更高的要求，可以用cornerSubPix()函数将角点定位到子像素，从而取得亚像素级别的角点检测效果。
 			cornerSubPix(grayImageL, cornerL, Size(5, 5), Size(-1, -1), TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 20, 0.1));
 			drawChessboardCorners(rgbImageL, boardSize, cornerL, isFindL);
 			imshow("chessboardL", rgbImageL);
@@ -184,7 +187,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 
 	/*
-	计算实际的校正点的三维坐标
+	计算实际的校正点的三维坐标，根据输入的格子大小来进行设置
 	根据实际标定格子的大小来设置
 	*/
 	calRealPoint(objRealPoint, boardWidth, boardHeight, frameNumber, squareSize);
@@ -200,7 +203,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		cameraMatrixR, distCoeffR,
 		Size(imageWidth, imageHeight), R, T, E, F,
 		CALIB_USE_INTRINSIC_GUESS,
-		TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 100, 1e-5));
+		TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 100, 1e-5));//TermCriteria::COUNT+EPS将最大迭代次数和阈值都作为终止条件；
 
 	cout << "Stereo Calibration done with RMS error = " << rms << endl;
 
@@ -239,6 +242,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	imshow("ImageL", rectifyImageL);
 	imshow("ImageR", rectifyImageR);
 
+	/*保存校正后的图像*/
+	imwrite("rectifyImageL.bmp", rectifyImageL);
+	imwrite("rectifyImageR.bmp", rectifyImageR);
 	/*保存并输出数据*/
 	outputCameraParam();
 
